@@ -62,6 +62,9 @@
             </uap:SupportedFileTypes>
           </uap:FileOpenPicker>
         </uap:Extension>
+        <uap:Extension Category="windows.appService">
+          <uap:AppService Name="SampleInteropService" />
+        </uap:Extension>
       </Extensions>
     </Application>
   </Applications>

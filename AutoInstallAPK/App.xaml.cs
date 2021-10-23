@@ -1,10 +1,14 @@
-﻿using System;
+﻿using Iteedee.ApkReader;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.ApplicationModel.AppService;
+using Windows.ApplicationModel.Background;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
@@ -23,6 +27,11 @@ namespace AutoInstallAPK
     /// </summary>
     sealed partial class App : Application
     {
+        public static BackgroundTaskDeferral AppServiceDeferral = null;
+        public static AppServiceConnection Connection = null;
+        public static event EventHandler AppServiceDisconnected;
+        public static event EventHandler<AppServiceTriggerDetails> AppServiceConnected;
+
         /// <summary>
         /// 初始化单一实例应用程序对象。这是执行的创作代码的第一行，
         /// 已执行，逻辑上等同于 main() 或 WinMain()。
@@ -98,6 +107,7 @@ namespace AutoInstallAPK
             deferral.Complete();
         }
 
+        
         protected override void OnFileActivated(FileActivatedEventArgs args)
         {
             // TODO: Handle file activation
@@ -105,7 +115,7 @@ namespace AutoInstallAPK
             // The number of files received is args.Files.Size
             // The first file is args.Files[0].Name
             ApplicationData.Current.LocalSettings.Values["openningPath"] = args.Files[0].Path;
-
+            //var info = getmyInfo(file as IStorageFile);
             Frame rootFrame = Window.Current.Content as Frame;
             // 不要在窗口已包含内容时重复应用程序初始化，
             // 只需确保窗口处于活动状态
@@ -125,11 +135,34 @@ namespace AutoInstallAPK
                 // 当导航堆栈尚未还原时，导航到第一页，
                 // 并通过将所需信息作为导航参数传入来配置
                 // 参数
-                rootFrame.Navigate(typeof(InstallPage));
+                rootFrame.Navigate(typeof(InstallPage),args.Files[0]);
             }
             // 确保当前窗口处于活动状态
             Window.Current.Activate();
             //RunCommand.Run("C:\\Users\\sun20\\Desktop\\test\\default_test.exe", args.Files[0].Name);
+        }
+
+
+        protected override void OnBackgroundActivated(BackgroundActivatedEventArgs args)
+        {
+            base.OnBackgroundActivated(args);
+            if (args.TaskInstance.TriggerDetails is AppServiceTriggerDetails)
+            {
+                AppServiceDeferral = args.TaskInstance.GetDeferral();
+                args.TaskInstance.Canceled += OnTaskCanceled; // Associate a cancellation handler with the background task.
+
+                AppServiceTriggerDetails details = args.TaskInstance.TriggerDetails as AppServiceTriggerDetails;
+                Connection = details.AppServiceConnection;
+                AppServiceConnected?.Invoke(this, args.TaskInstance.TriggerDetails as AppServiceTriggerDetails);
+            }
+        }
+
+        private void OnTaskCanceled(IBackgroundTaskInstance sender, BackgroundTaskCancellationReason reason)
+        {
+            AppServiceDeferral?.Complete();
+            AppServiceDeferral = null;
+            Connection = null;
+            AppServiceDisconnected?.Invoke(this, null);
         }
     }
 }
