@@ -52,7 +52,7 @@ namespace AutoInstallAPK
             string result = ApplicationData.Current.LocalSettings.Values["finished"] as string;
             if (result == "true")
             {
-                autoSuggestBox.Text = "运行完成";
+                autoSuggestBox.Text = result;
                 timer.Stop();
             }
         }

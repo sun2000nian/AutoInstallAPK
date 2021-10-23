@@ -31,6 +31,8 @@ namespace AutoInstallAPK
         ApkInfo info;
         string path;
         DispatcherTimer timer = null;
+        StorageFolder storageFolder = null;
+        StorageFile commandFile = null;
         int term = 0;
         private async Task<ApkInfo> getApkInfo(StorageFile file)
         {
@@ -132,6 +134,11 @@ namespace AutoInstallAPK
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
+            commandFile =(await storageFolder.TryGetItemAsync("commandOutput")) as StorageFile;
+            if (commandFile == null)
+            {
+                await storageFolder.CreateFileAsync("commandOutput");
+            }
             var file = e.Parameter as StorageFile;
             try
             {
@@ -172,6 +179,7 @@ namespace AutoInstallAPK
             buttonInstall.Content = "加载中";
             buttonInstall.IsEnabled = false;
             term = 1;
+            storageFolder=ApplicationData.Current.LocalCacheFolder;
         }
 
         void dispatcherTimer_Tick(object sender, object e)
