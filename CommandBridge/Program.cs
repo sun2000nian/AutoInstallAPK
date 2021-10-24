@@ -17,10 +17,6 @@ namespace CommandBridge
 {
     class Program
     {
-        static AppServiceConnection connection = null;
-        static AutoResetEvent appServiceExit = null;
-        static StorageFolder storageFolder = null;
-        static StorageFile commandFile = null;
         static void Main(string[] args)
         {
             MainAsync(args);
@@ -32,7 +28,14 @@ namespace CommandBridge
             Process newProcess = new Process();
             string application = ApplicationData.Current.LocalSettings.Values["command"] as string;
             string parameters = ApplicationData.Current.LocalSettings.Values["parameters"] as string;
-            
+
+            if (!File.Exists(application))
+            {
+                ApplicationData.Current.LocalSettings.Values["finished"] = "true";
+                ApplicationData.Current.LocalSettings.Values["noFile"] = "true";
+                return;
+            }
+
             newProcess.StartInfo.FileName = application;
             newProcess.StartInfo.Arguments = parameters;
             newProcess.StartInfo.UseShellExecute = false;
@@ -49,21 +52,12 @@ namespace CommandBridge
             FileStream fileStream = new FileStream(cmdOutFile,FileMode.OpenOrCreate, FileAccess.Write);
             StreamWriter streamWriter = new StreamWriter(fileStream);
             fileStream.SetLength(0);
+
             streamWriter.Write(temp);
             streamWriter.Close();
             fileStream.Close();
 
             ApplicationData.Current.LocalSettings.Values["finished"] = "true";
-        }
-
-        static async void InitializeAppServiceConnection()
-        {
-            connection = new AppServiceConnection();
-            connection.AppServiceName = "SampleInteropService";
-            connection.PackageFamilyName = Package.Current.Id.FamilyName;
-
-            connection.OpenAsync();
-
         }
     }
 }

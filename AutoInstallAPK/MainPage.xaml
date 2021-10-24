@@ -8,9 +8,42 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Height="325" Width="550">
 
-    <Grid>
-        <Button x:Name="button" Content="测试" VerticalAlignment="Bottom" Margin="0,0,0,293" Click="button_Click"/>
-        <AutoSuggestBox x:Name="autoSuggestBox" HorizontalAlignment="Left" Margin="0,32,0,0"/>
+    <Grid Margin="10,10,10,10">
+        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="10,10,0,0" Text="设置" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="24"/>
+        <CheckBox x:Name="checkBox_useDefaultADB" Content="使用内置ADB" Checked="checkBox_useDefaultADB_Checked" Unchecked="checkBox_useDefaultADB_Unchecked" Margin="10,47,0,0" VerticalAlignment="Top"/>
+        <Grid Margin="10,84,10,181">
+            <TextBlock x:Name="textBlock1" HorizontalAlignment="Left" Text="指定ADB路径" TextWrapping="Wrap" VerticalAlignment="Center"/>
+            <AutoSuggestBox 
+                x:Name="autoSuggestBox_PATH" 
+                HorizontalAlignment="Left"
+                Margin="88,0,0,0" 
+                VerticalAlignment="Center"
+                PlaceholderText="路径"
+                QueryIcon="Copy"
+                Width="342"/>
+            <Button x:Name="buttonApplyADBPath" Content="应用" Margin="435,0,0,0" Width="65" Click="buttonApplyADBPath_Click"/>
+
+        </Grid>
+        <Grid Margin="10,174,10,91">
+            <TextBlock x:Name="textBlock2" HorizontalAlignment="Left" Text="连接设备" TextWrapping="Wrap" VerticalAlignment="Center"/>
+            <AutoSuggestBox 
+                x:Name="autoSuggestBox_IP" 
+                HorizontalAlignment="Left" 
+                Margin="88,0,0,0" 
+                VerticalAlignment="Center" 
+                PlaceholderText="ip地址"
+                Width="342"/>
+            <Button x:Name="button_connect" Content="连接" Margin="435,0,0,0" Width="65" Click="button_Connect_Click"/>
+
+        </Grid>
+        <TextBlock x:Name="textBlock_message" HorizontalAlignment="Left" Margin="10,219,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="507"/>
+        <TextBlock x:Name="textBlock3" HorizontalAlignment="Left" Margin="341,276,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="179"><Run Text="安装"/><Run Text="应用"/><Run Text="请直接双击apk文件"/></TextBlock>
+        <Grid Margin="10,129,10,136">
+            <TextBlock x:Name="textBlock4" HorizontalAlignment="Left" Text="已连接设备" TextWrapping="Wrap" VerticalAlignment="Center"/>
+            <ComboBox x:Name="comboBox_devices" ItemsSource="{x:Bind devices}" DisplayMemberPath="Source" Width="342" VerticalAlignment="Center" Margin="88,0,0,0" />
+
+        </Grid>
+
 
     </Grid>
 </Page>

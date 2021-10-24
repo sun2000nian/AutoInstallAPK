@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.AppService;
 using Windows.Foundation;
@@ -10,6 +12,7 @@ using Windows.Foundation.Collections;
 using Windows.Foundation.Metadata;
 using Windows.Storage;
 using Windows.System.Threading;
+using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -28,13 +31,69 @@ namespace AutoInstallAPK
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        DispatcherTimer timer = null;
+        //DispatcherTimer timer = null;
+        ObservableCollection<FontFamily> devices = new ObservableCollection<FontFamily>();
         public MainPage()
         {
             this.InitializeComponent();
-            timer = new DispatcherTimer();
-            timer.Tick += dispatcherTimer_Tick;
-            timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            if (ApplicationData.Current.LocalSettings.Values["UseDefaultADB"] as string == "false")
+            {
+                checkBox_useDefaultADB.IsChecked = false;
+                if (autoSuggestBox_PATH != null)
+                {
+                    autoSuggestBox_PATH.IsEnabled = true;
+                    if (ApplicationData.Current.LocalSettings.Values["adbPath"] != null)
+                    {
+                        autoSuggestBox_PATH.Text = ApplicationData.Current.LocalSettings.Values["adbPath"] as string;
+                    }
+                }
+                if (buttonApplyADBPath != null)
+                {
+                    buttonApplyADBPath.IsEnabled = true;
+                }
+            }
+            else
+            {
+                checkBox_useDefaultADB.IsChecked = true;
+                if (autoSuggestBox_PATH != null)
+                {
+                    autoSuggestBox_PATH.IsEnabled = false;
+                }
+                if (buttonApplyADBPath != null)
+                {
+                    buttonApplyADBPath.IsEnabled = false;
+                }
+            }
+        }
+
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            await loadDeviceInfo();
+        }
+
+        private async Task loadDeviceInfo()
+        {
+            string result = await RunCommand.AdbRun("devices");
+            var list = result.Split("\r\n");
+            List<string> deviceStrList = new List<string>(list);
+            int default_select = -1;
+            while (deviceStrList.Contains(""))
+            {
+                deviceStrList.Remove("");
+            }
+            devices.Clear();
+            for(int i = 1; i <deviceStrList.Count ; i++)
+            {
+                devices.Add(new FontFamily(deviceStrList[i]));
+                if (deviceStrList[i].Contains("127")&&default_select==-1)
+                {
+                    default_select = i-1;
+                }
+            }
+            if (default_select != -1)
+            {
+                comboBox_devices.SelectedIndex = default_select;
+            }
         }
 
         //protected async override void OnNavigatedTo(NavigationEventArgs e)
@@ -47,39 +106,99 @@ namespace AutoInstallAPK
         //        App.AppServiceDisconnected += MainPage_AppServiceDisconnected;
         //    }
         //}
-        void dispatcherTimer_Tick(object sender, object e)
+        //void dispatcherTimer_Tick(object sender, object e)
+        //{
+        //    string result = ApplicationData.Current.LocalSettings.Values["finished"] as string;
+        //    if (result == "true")
+        //    {
+        //        autoSuggestBox.Text = result;
+        //        timer.Stop();
+        //    }
+        //}
+
+
+        private void checkBox_useDefaultADB_Checked(object sender, RoutedEventArgs e)
         {
-            string result = ApplicationData.Current.LocalSettings.Values["finished"] as string;
-            if (result == "true")
+            ApplicationData.Current.LocalSettings.Values["UseDefaultADB"] = "true";
+            checkBox_useDefaultADB.IsChecked = true;
+            
+            if (autoSuggestBox_PATH != null)
             {
-                autoSuggestBox.Text = result;
-                timer.Stop();
+                autoSuggestBox_PATH.IsEnabled = false;
+            }
+            if (buttonApplyADBPath != null)
+            {
+                buttonApplyADBPath.IsEnabled = false;
             }
         }
 
-        private async void button_Click(object sender, RoutedEventArgs e)
+        private void checkBox_useDefaultADB_Unchecked(object sender, RoutedEventArgs e)
         {
-            autoSuggestBox.Text = "运行中";
-            timer.Start();
-            ApplicationData.Current.LocalSettings.Values["finished"] = "false";
-            await RunCommand.Run("C:\\Users\\sun20\\Desktop\\test\\default_test.exe", "install D:\\Downloads\\weixin8015android2020_arm64.apk");
-            //TimeSpan period = TimeSpan.FromMilliseconds(100);
-            //var timer = ThreadPoolTimer.CreatePeriodicTimer((source) =>
-            //{
-            //    try
-            //    {
-            //        //do something
-            //        string result = ApplicationData.Current.LocalSettings.Values["finished"] as string;
-            //        if ( result == "true")
-            //        {
-            //            autoSuggestBox.Text = "运行完成";
-            //        }
-            //    }
-            //    catch (Exception)
-            //    {
+            checkBox_useDefaultADB.IsChecked = false;
+            
+            if (autoSuggestBox_PATH != null)
+            {
+                autoSuggestBox_PATH.IsEnabled = true;
+            }
+            if (buttonApplyADBPath != null)
+            {
+                buttonApplyADBPath.IsEnabled = true;
+            }
+        }
 
-            //    }
-            //},period);
+        private async void buttonApplyADBPath_Click(object sender, RoutedEventArgs e)
+        {
+            buttonApplyADBPath.IsEnabled = false;
+            textBlock_message.Foreground = textBlock.Foreground;
+            textBlock_message.Text = "adb路径验证中";
+            ApplicationData.Current.LocalSettings.Values["UseDefaultADB"] = "true";
+            //string result= await RunCommand.Run(Directory.GetCurrentDirectory() + "/platform-tools/adb.exe", "devices");
+            string newPath = autoSuggestBox_PATH.Text;
+            newPath=newPath.Replace("\"","");
+            if (Path.GetFileName(newPath) != "adb.exe")
+            {
+                textBlock_message.Text = "路径需指向一个adb.exe文件";
+                textBlock_message.Foreground = new SolidColorBrush(Colors.Red);
+                buttonApplyADBPath.IsEnabled = true;
+                return;
+            }
+            ApplicationData.Current.LocalSettings.Values["noFile"] = "false";
+            string result = await RunCommand.Run(newPath, "version");
+
+            if (ApplicationData.Current.LocalSettings.Values["noFile"] as string == "true")
+            {
+                textBlock_message.Text = "路径需指向一个adb.exe文件";
+                textBlock_message.Foreground = new SolidColorBrush(Colors.Red);
+                buttonApplyADBPath.IsEnabled = true;
+                return;
+            }
+
+            if (result.ToLower().Contains("installed as"))
+            {
+                //可用
+                ApplicationData.Current.LocalSettings.Values["adbPath"] = newPath;
+                
+                textBlock_message.Text = "adb路径验证通过";
+                textBlock_message.Foreground = new SolidColorBrush(Colors.Green);
+                ApplicationData.Current.LocalSettings.Values["UseDefaultADB"] = "false";
+            }
+            else
+            {
+                textBlock_message.Text = "adb路径不可用";
+                textBlock_message.Foreground = new SolidColorBrush(Colors.Red);
+                ApplicationData.Current.LocalSettings.Values["UseDefaultADB"] = "true";
+            }
+            buttonApplyADBPath.IsEnabled = true;
+        }
+
+        private async void button_Connect_Click(object sender, RoutedEventArgs e)
+        {
+            button_connect.IsEnabled = false;
+            textBlock_message.Text = "连接中...";
+            string result = await RunCommand.AdbRun("connect " + autoSuggestBox_IP.Text);
+            textBlock_message.Foreground = textBlock.Foreground;
+            textBlock_message.Text = result;
+            button_connect.IsEnabled = true;
         }
 
         //private async void MainPage_AppServiceConnected(object sender, AppServiceTriggerDetails e)

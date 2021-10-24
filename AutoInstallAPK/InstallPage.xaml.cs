@@ -18,6 +18,9 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
+using System.Net.Mime;
+using HeyRed.Mime;
+using System.Collections.ObjectModel;
 
 // https://go.microsoft.com/fwlink/?LinkId=234238 上介绍了“空白页”项模板
 
@@ -30,9 +33,11 @@ namespace AutoInstallAPK
     {
         ApkInfo info;
         string path;
-        DispatcherTimer timer = null;
-        StorageFolder storageFolder = null;
-        StorageFile commandFile = null;
+        List<string> deviceStrList = null;
+        ObservableCollection<FontFamily> devices = new ObservableCollection<FontFamily>();
+        //DispatcherTimer timer = null;
+        //StorageFolder storageFolder = null;
+        //StorageFile commandFile = null;
         int term = 0;
         private async Task<ApkInfo> getApkInfo(StorageFile file)
         {
@@ -69,7 +74,7 @@ namespace AutoInstallAPK
                                     //    return content;
                                     //}
                                     //*/
-                                    manifestData = new byte[item.Size];
+                                    manifestData = new byte[item.Size+5];
                                     Stream strm = zipfile.GetInputStream(item);
                                     int size = strm.Read(manifestData, 0, manifestData.Length);
                                     if (resourcesData != null) break;
@@ -132,21 +137,50 @@ namespace AutoInstallAPK
             else return null;
         }
 
+        private async Task loadDeviceInfo()
+        {
+            string result = await RunCommand.AdbRun("devices");
+            var list = result.Split("\r\n");
+            deviceStrList = new List<string>(list);
+            int default_select = -1;
+            while (deviceStrList.Contains(""))
+            {
+                deviceStrList.Remove("");
+            }
+            devices.Clear();
+            for (int i = 1; i < deviceStrList.Count; i++)
+            {
+                devices.Add(new FontFamily(deviceStrList[i]));
+                if (deviceStrList[i].Contains("127") && default_select == -1)
+                {
+                    default_select = i - 1;
+                }
+            }
+            if (default_select != -1)
+            {
+                comboBox_SelectDevice.SelectedIndex = default_select;
+            }
+        }
+
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            commandFile =(await storageFolder.TryGetItemAsync("commandOutput")) as StorageFile;
-            if (commandFile == null)
-            {
-                await storageFolder.CreateFileAsync("commandOutput");
-            }
             var file = e.Parameter as StorageFile;
             try
             {
                 info = await getApkInfo(file);
                 var imglist = info.iconFileName;
+                int i = imglist.Count() - 1;
+                string teststr;
+                while (i >= 0)
+                {
+                    teststr = MimeTypesMap.GetMimeType(imglist[i]);
+                    if (teststr.Contains("image"))
+                        break;
+                    i--;
+                }
                 if (info != null)
                 {
-                    SoftwareBitmap bitmap = await getIcon(file, info.iconFileName[0]);
+                    SoftwareBitmap bitmap = await getIcon(file, info.iconFileName[i]);
                     if (bitmap != null)
                     {
                         if (bitmap.BitmapPixelFormat != BitmapPixelFormat.Bgra8 || bitmap.BitmapAlphaMode == BitmapAlphaMode.Straight)
@@ -159,12 +193,19 @@ namespace AutoInstallAPK
                         IconArea.Source = source;
                     }
                 }
+                await loadDeviceInfo();
+                textBlockPackageName.Text = info.label;
                 buttonInstall.Content = "安装";
+                textBlock_package.Text = "包："+info.packageName;
+                textBlock_version.Text = "版本"+info.versionName;
                 buttonInstall.IsEnabled = true;
             }
             catch(Exception)
             {
-
+                textBlockPackageName.Text = "包信息解析失败，但仍可安装";
+                
+                buttonInstall.Content = "安装";
+                buttonInstall.IsEnabled = true;
             }
         }
 
@@ -172,47 +213,66 @@ namespace AutoInstallAPK
         {
             this.InitializeComponent();
             path = ApplicationData.Current.LocalSettings.Values["openningPath"] as string;
-            textBlockPath.Text = path;
-            timer = new DispatcherTimer();
-            timer.Tick += dispatcherTimer_Tick;
-            timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            buttonInstall.Content = "加载中";
+            textBlockPath.Text = "路径: "+ path;
+            //timer = new DispatcherTimer();
+            //timer.Tick += dispatcherTimer_Tick;
+            //timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            textBlockPackageName.Text = "加载中...";
+            buttonInstall.Content = "安装";
+            textBlock_package.Text = "";
+            textBlock_version.Text = "";
+            textBlock_out.Text = "";
             buttonInstall.IsEnabled = false;
             term = 1;
-            storageFolder=ApplicationData.Current.LocalCacheFolder;
         }
 
-        void dispatcherTimer_Tick(object sender, object e)
-        {
-            string result = ApplicationData.Current.LocalSettings.Values["finished"] as string;
-            if (result == "true")
-            {
-                buttonInstall.Content = "关闭";
-                buttonInstall.IsEnabled = true;
-                timer.Stop();
-                term = 3;
-            }
-        }
+        //void dispatcherTimer_Tick(object sender, object e)
+        //{
+        //    string result = ApplicationData.Current.LocalSettings.Values["finished"] as string;
+        //    if (result == "true")
+        //    {
+        //        buttonInstall.Content = "关闭";
+        //        buttonInstall.IsEnabled = true;
+        //        timer.Stop();
+        //        term = 3;
+        //    }
+        //}
 
         private async void ButtonInstall_Click(object sender, RoutedEventArgs e)
         {
-            if (term==1)
+            string selectedStr = null;
+            if (devices != null)
             {
-                if (path != null)
-                {
-                    ApplicationData.Current.LocalSettings.Values["finished"] = "false";
-                    await RunCommand.Run("C:\\Users\\sun20\\Desktop\\test\\default_test.exe", "install " + path);
-                    buttonInstall.Content = "安装中";
-                    buttonInstall.IsEnabled = false;
-                    timer.Start();
-                    term = 2;
-                }
+                selectedStr = deviceStrList[comboBox_SelectDevice.SelectedIndex+1];
             }
-            else if (term == 3)
+            selectedStr = selectedStr.Split('\t')[0];
+            if (path != null && selectedStr!=null)
             {
-                //关闭应用
-                CoreApplication.Exit();
+                buttonInstall.Content = "安装中";
+                buttonInstall.IsEnabled = false;
+                string result = await RunCommand.AdbRun("-s " + selectedStr + " install " + path);
+                //string result = await RunCommand.Run("C:\\Users\\sun20\\Desktop\\test\\default_test.exe", "install " + selectedStr);
+                buttonCancel.Content = "完成";
+                buttonInstall.IsEnabled = true;
+                buttonInstall.Visibility = Visibility.Collapsed;
+                textBlock_out.Text = result;
+
             }
+        }
+
+        private void buttonCancel_Click(object sender, RoutedEventArgs e)
+        {
+            CoreApplication.Exit();
+        }
+
+        private async void button_Connect_Click(object sender, RoutedEventArgs e)
+        {
+            button_Connect.IsEnabled = false;
+            textBlock_out.Text = "连接中...";
+            string result = await RunCommand.AdbRun("connect " + autoSuggestBox.Text);
+            textBlock_out.Text = result;
+            button_Connect.IsEnabled = true;
+            await loadDeviceInfo();
         }
     }
 }

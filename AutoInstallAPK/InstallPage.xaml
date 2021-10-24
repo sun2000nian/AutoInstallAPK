@@ -11,8 +11,27 @@
 
     <Grid Margin="10,10,10,10">
         <Image x:Name="IconArea" HorizontalAlignment="Left" Height="100" Margin="370,10,0,0" VerticalAlignment="Top" Width="100"/>
-        <TextBlock x:Name="textBlockPath" HorizontalAlignment="Left" Margin="10,10,0,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <Button x:Name="buttonInstall" Content="安装" Margin="422,236,0,0" VerticalAlignment="Top" Click="ButtonInstall_Click"/>
-
+        <TextBlock x:Name="textBlockPackageName" HorizontalAlignment="Left" Margin="10,10,0,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="22"/>
+        <TextBlock x:Name="textBlockPath" HorizontalAlignment="Left" Margin="10,49,0,0" Text="Path" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <Grid Margin="298,230,0,10">
+            <Grid Margin="0,0,91,0">
+                <Button x:Name="buttonInstall" Content="安装"  Click="ButtonInstall_Click" HorizontalAlignment="Stretch"/>
+            </Grid>
+            <Grid Margin="96,0,0,0">
+                <Button x:Name="buttonCancel" Content="取消" HorizontalAlignment="Stretch" Click="buttonCancel_Click"/>
+            </Grid>
+        </Grid>
+        <ComboBox x:Name="comboBox_SelectDevice" ItemsSource="{x:Bind devices}" DisplayMemberPath="Source" Margin="240,176,0,0" Width="230"/>
+        <TextBlock x:Name="textBlock_select" HorizontalAlignment="Left" Margin="245,152,0,0" Text="选择设备" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <AutoSuggestBox
+            x:Name="autoSuggestBox" 
+            HorizontalAlignment="Left" 
+            Margin="10,176,0,0"
+            Width="158"/>
+        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="15,152,0,0" Text="连接设备" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <Button x:Name="button_Connect" Content="连接" Margin="173,176,0,0" VerticalAlignment="Top" Click="button_Connect_Click"/>
+        <TextBlock x:Name="textBlock_out" HorizontalAlignment="Left" Margin="10,213,0,0" Text="Output" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <TextBlock x:Name="textBlock_package" HorizontalAlignment="Left" Margin="10,97,0,0" Text="Package" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <TextBlock x:Name="textBlock_version" HorizontalAlignment="Left" Margin="10,73,0,0" Text="Version" TextWrapping="Wrap" VerticalAlignment="Top"/>
     </Grid>
 </Page>
