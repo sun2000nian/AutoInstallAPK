@@ -21,6 +21,7 @@ using Windows.UI.Xaml.Navigation;
 using System.Net.Mime;
 using HeyRed.Mime;
 using System.Collections.ObjectModel;
+using Windows.UI;
 
 // https://go.microsoft.com/fwlink/?LinkId=234238 上介绍了“空白页”项模板
 
@@ -35,6 +36,7 @@ namespace AutoInstallAPK
         string path;
         List<string> deviceStrList = null;
         ObservableCollection<FontFamily> devices = new ObservableCollection<FontFamily>();
+        bool device_connected = false;
         //DispatcherTimer timer = null;
         //StorageFolder storageFolder = null;
         //StorageFile commandFile = null;
@@ -148,6 +150,14 @@ namespace AutoInstallAPK
                 deviceStrList.Remove("");
             }
             devices.Clear();
+            if (deviceStrList.Count == 1)
+            {
+                devices.Add(new FontFamily("无已连接设备"));
+                device_connected = false;
+                comboBox_SelectDevice.SelectedIndex = 0;
+                return;
+            }
+            device_connected = true;
             for (int i = 1; i < deviceStrList.Count; i++)
             {
                 devices.Add(new FontFamily(deviceStrList[i]));
@@ -193,11 +203,11 @@ namespace AutoInstallAPK
                         IconArea.Source = source;
                     }
                 }
-                await loadDeviceInfo();
+                
                 textBlockPackageName.Text = info.label;
                 buttonInstall.Content = "安装";
-                textBlock_package.Text = "包："+info.packageName;
-                textBlock_version.Text = "版本"+info.versionName;
+                textBlock_package.Text = "包: "+info.packageName;
+                textBlock_version.Text = "版本: "+info.versionName;
                 buttonInstall.IsEnabled = true;
             }
             catch(Exception)
@@ -207,6 +217,7 @@ namespace AutoInstallAPK
                 buttonInstall.Content = "安装";
                 buttonInstall.IsEnabled = true;
             }
+            await loadDeviceInfo();
         }
 
         public InstallPage()
@@ -240,12 +251,19 @@ namespace AutoInstallAPK
 
         private async void ButtonInstall_Click(object sender, RoutedEventArgs e)
         {
+            if (!device_connected)
+            {
+                textBlock_out.Text = "请连接一个设备";
+                textBlock_out.Foreground = new SolidColorBrush(Colors.Red);
+                return;
+            }
             string selectedStr = null;
             if (devices != null)
             {
                 selectedStr = deviceStrList[comboBox_SelectDevice.SelectedIndex+1];
             }
             selectedStr = selectedStr.Split('\t')[0];
+            
             if (path != null && selectedStr!=null)
             {
                 buttonInstall.Content = "安装中";
@@ -256,6 +274,7 @@ namespace AutoInstallAPK
                 buttonInstall.IsEnabled = true;
                 buttonInstall.Visibility = Visibility.Collapsed;
                 textBlock_out.Text = result;
+                textBlock_out.Foreground = textBlock.Foreground;
 
             }
         }
@@ -264,13 +283,58 @@ namespace AutoInstallAPK
         {
             CoreApplication.Exit();
         }
+        public static bool ValidateIPv4(string ipString)
+        {
+            if (String.IsNullOrWhiteSpace(ipString))
+            {
+                return false;
+            }
+            string address = null;
+            string port = null;
+            string[] splt = ipString.Split(':');
+
+            switch (splt.Length)
+            {
+                case 1:
+                    address = ipString;
+                    break;
+                case 2:
+                    address = ipString.Split(':')[0];
+                    port = ipString.Split(':')[1];
+                    if (String.IsNullOrWhiteSpace(address) || String.IsNullOrWhiteSpace(port))
+                    {
+                        return false;
+                    }
+                    break;
+                default:
+                    return false;
+            }
+
+            string[] splitValues = address.Split('.');
+            if (splitValues.Length != 4)
+            {
+                return false;
+            }
+
+            byte tempForParsing;
+
+            return splitValues.All(r => byte.TryParse(r, out tempForParsing));
+        }
 
         private async void button_Connect_Click(object sender, RoutedEventArgs e)
         {
+            if (!ValidateIPv4(autoSuggestBox.Text))
+            {
+                textBlock_out.Text = "请输入一个有效的设备ip地址";
+                textBlock_out.Foreground = new SolidColorBrush(Colors.Red);
+                return;
+            }
             button_Connect.IsEnabled = false;
             textBlock_out.Text = "连接中...";
+            textBlock_out.Foreground = textBlock.Foreground;
             string result = await RunCommand.AdbRun("connect " + autoSuggestBox.Text);
             textBlock_out.Text = result;
+            textBlock_out.Foreground = textBlock.Foreground;
             button_Connect.IsEnabled = true;
             await loadDeviceInfo();
         }

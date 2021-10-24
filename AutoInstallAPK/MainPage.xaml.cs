@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
@@ -82,7 +83,13 @@ namespace AutoInstallAPK
                 deviceStrList.Remove("");
             }
             devices.Clear();
-            for(int i = 1; i <deviceStrList.Count ; i++)
+            if (deviceStrList.Count == 1)
+            {
+                devices.Add(new FontFamily("无已连接设备"));
+                comboBox_devices.SelectedIndex = 0;
+                return;
+            }
+            for (int i = 1; i <deviceStrList.Count ; i++)
             {
                 devices.Add(new FontFamily(deviceStrList[i]));
                 if (deviceStrList[i].Contains("127")&&default_select==-1)
@@ -191,14 +198,75 @@ namespace AutoInstallAPK
             buttonApplyADBPath.IsEnabled = true;
         }
 
+        public static bool ValidateIPv4(string ipString)
+        {
+            if (String.IsNullOrWhiteSpace(ipString))
+            {
+                return false;
+            }
+            string address = null;
+            string port = null;
+            string[] splt = ipString.Split(':');
+
+            switch (splt.Length)
+            {
+                case 1:
+                    address = ipString;
+                    break;
+                case 2:
+                    address = ipString.Split(':')[0];
+                    port = ipString.Split(':')[1];
+                    if (String.IsNullOrWhiteSpace(address) || String.IsNullOrWhiteSpace(port))
+                    {
+                        return false;
+                    }
+                    break;
+                default:
+                    return false;
+            }
+
+            string[] splitValues = address.Split('.');
+            if (splitValues.Length != 4)
+            {
+                return false;
+            }
+
+            byte tempForParsing;
+
+            return splitValues.All(r => byte.TryParse(r, out tempForParsing));
+        }
+
         private async void button_Connect_Click(object sender, RoutedEventArgs e)
         {
+            if(!ValidateIPv4(autoSuggestBox_IP.Text))
+            {
+                textBlock_message.Text = "请输入一个有效的设备ip地址";
+                textBlock_message.Foreground = new SolidColorBrush(Colors.Red);
+                return;
+            }
             button_connect.IsEnabled = false;
             textBlock_message.Text = "连接中...";
+            textBlock_message.Foreground = textBlock.Foreground;
             string result = await RunCommand.AdbRun("connect " + autoSuggestBox_IP.Text);
             textBlock_message.Foreground = textBlock.Foreground;
             textBlock_message.Text = result;
             button_connect.IsEnabled = true;
+            await loadDeviceInfo();
+        }
+
+        private async void autoSuggestBox_PATH_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            var picker = new Windows.Storage.Pickers.FileOpenPicker();
+            picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
+            picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
+            picker.FileTypeFilter.Add(".exe");
+
+            Windows.Storage.StorageFile file = await picker.PickSingleFileAsync();
+            if (file != null)
+            {
+                // Application now has read/write access to the picked file
+                autoSuggestBox_PATH.Text = file.Path;
+            }
         }
 
         //private async void MainPage_AppServiceConnected(object sender, AppServiceTriggerDetails e)

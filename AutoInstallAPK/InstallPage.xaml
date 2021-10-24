@@ -21,16 +21,16 @@
                 <Button x:Name="buttonCancel" Content="取消" HorizontalAlignment="Stretch" Click="buttonCancel_Click"/>
             </Grid>
         </Grid>
-        <ComboBox x:Name="comboBox_SelectDevice" ItemsSource="{x:Bind devices}" DisplayMemberPath="Source" Margin="240,176,0,0" Width="230"/>
-        <TextBlock x:Name="textBlock_select" HorizontalAlignment="Left" Margin="245,152,0,0" Text="选择设备" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <ComboBox x:Name="comboBox_SelectDevice" Header="选择设备" ItemsSource="{x:Bind devices}" DisplayMemberPath="Source" Margin="240,153,0,0" Width="230"/>
         <AutoSuggestBox
             x:Name="autoSuggestBox" 
             HorizontalAlignment="Left" 
+            PlaceholderText="设备ip地址"
             Margin="10,176,0,0"
             Width="158"/>
         <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="15,152,0,0" Text="连接设备" TextWrapping="Wrap" VerticalAlignment="Top"/>
         <Button x:Name="button_Connect" Content="连接" Margin="173,176,0,0" VerticalAlignment="Top" Click="button_Connect_Click"/>
-        <TextBlock x:Name="textBlock_out" HorizontalAlignment="Left" Margin="10,213,0,0" Text="Output" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <TextBlock x:Name="textBlock_out" HorizontalAlignment="Left" Margin="10,213,0,0" Text="Output" TextWrapping="Wrap" VerticalAlignment="Top" Height="57" Width="263"/>
         <TextBlock x:Name="textBlock_package" HorizontalAlignment="Left" Margin="10,97,0,0" Text="Package" TextWrapping="Wrap" VerticalAlignment="Top"/>
         <TextBlock x:Name="textBlock_version" HorizontalAlignment="Left" Margin="10,73,0,0" Text="Version" TextWrapping="Wrap" VerticalAlignment="Top"/>
     </Grid>

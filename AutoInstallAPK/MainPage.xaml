@@ -20,6 +20,7 @@
                 VerticalAlignment="Center"
                 PlaceholderText="路径"
                 QueryIcon="Copy"
+                QuerySubmitted="autoSuggestBox_PATH_QuerySubmitted"
                 Width="342"/>
             <Button x:Name="buttonApplyADBPath" Content="应用" Margin="435,0,0,0" Width="65" Click="buttonApplyADBPath_Click"/>
 
