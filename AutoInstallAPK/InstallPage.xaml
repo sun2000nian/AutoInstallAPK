@@ -7,31 +7,45 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" 
-    Height="300" Width="500">
-
-    <Grid Margin="10,10,10,10">
+    d:Height="300" d:Width="500">
+    <Grid>
+        <Grid Height="280" Width="480" Margin="10,10,10,10" HorizontalAlignment="Left" VerticalAlignment="Top">
         <Image x:Name="IconArea" HorizontalAlignment="Left" Height="100" Margin="370,10,0,0" VerticalAlignment="Top" Width="100"/>
         <TextBlock x:Name="textBlockPackageName" HorizontalAlignment="Left" Margin="10,10,0,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="22"/>
         <TextBlock x:Name="textBlockPath" HorizontalAlignment="Left" Margin="10,49,0,0" Text="Path" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <Grid Margin="298,230,0,10">
-            <Grid Margin="0,0,91,0">
-                <Button x:Name="buttonInstall" Content="安装"  Click="ButtonInstall_Click" HorizontalAlignment="Stretch"/>
-            </Grid>
-            <Grid Margin="96,0,0,0">
-                <Button x:Name="buttonCancel" Content="取消" HorizontalAlignment="Stretch" Click="buttonCancel_Click"/>
-            </Grid>
+        <Grid Margin="280,230,10,10">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="buttonInstall" Style="{StaticResource AccentButtonStyle}" Content="安装"  Click="ButtonInstall_Click" HorizontalAlignment="Stretch"/>
+                <Grid Margin="10,0,0,0">
+                    <Button x:Name="buttonCancel" Content="取消" HorizontalAlignment="Stretch" Click="buttonCancel_Click"/>
+                    <Button x:Name="buttonFinish" Content="完成" HorizontalAlignment="Stretch" Click="buttonCancel_Click" Style="{StaticResource AccentButtonStyle}"/>
+                </Grid>
+            </StackPanel>
         </Grid>
-        <ComboBox x:Name="comboBox_SelectDevice" Header="选择设备" ItemsSource="{x:Bind devices}" DisplayMemberPath="Source" Margin="240,153,0,0" Width="230"/>
-        <AutoSuggestBox
-            x:Name="autoSuggestBox" 
-            HorizontalAlignment="Left" 
-            PlaceholderText="设备ip地址"
-            Margin="10,176,0,0"
-            Width="158"/>
-        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="15,152,0,0" Text="连接设备" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <Button x:Name="button_Connect" Content="连接" Margin="173,176,0,0" VerticalAlignment="Top" Click="button_Connect_Click"/>
+        <StackPanel Height="140" Margin="10,140,10,0" VerticalAlignment="Top">
+            <StackPanel Orientation="Horizontal" Margin="5,0,0,5" VerticalAlignment="Bottom">
+                <TextBlock x:Name="textBlock" Margin="0,0,0,5" Text="连接设备" TextWrapping="Wrap" VerticalAlignment="Bottom"/>
+                <TextBlock Text="选择设备" VerticalAlignment="Bottom" Margin="174,0,0,5"/>
+                <Button x:Name="buttonRefresh" Margin="100,0,0,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE117;" FontSize="13px"/>
+                        <TextBlock Text=" 刷新"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <AutoSuggestBox
+                        x:Name="autoSuggestBox" 
+                        HorizontalAlignment="Left" 
+                        PlaceholderText="设备ip地址"
+                        Width="163"/>
+                <Button x:Name="button_Connect" Margin="5,0,0,0" Content="连接" VerticalAlignment="Top" Click="button_Connect_Click"/>
+                <ComboBox x:Name="comboBox_SelectDevice" Margin="10,0,0,0" ItemsSource="{x:Bind Path=devices}" DisplayMemberPath="Source" Width="230"/>
+            </StackPanel>
+        </StackPanel>
         <TextBlock x:Name="textBlock_out" HorizontalAlignment="Left" Margin="10,213,0,0" Text="Output" TextWrapping="Wrap" VerticalAlignment="Top" Height="57" Width="263"/>
         <TextBlock x:Name="textBlock_package" HorizontalAlignment="Left" Margin="10,97,0,0" Text="Package" TextWrapping="Wrap" VerticalAlignment="Top"/>
         <TextBlock x:Name="textBlock_version" HorizontalAlignment="Left" Margin="10,73,0,0" Text="Version" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        </Grid>
     </Grid>
 </Page>

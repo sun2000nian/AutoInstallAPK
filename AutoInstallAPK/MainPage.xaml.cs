@@ -15,6 +15,7 @@ using Windows.Storage;
 using Windows.System.Threading;
 using Windows.UI;
 using Windows.UI.Core;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -37,6 +38,7 @@ namespace AutoInstallAPK
         public MainPage()
         {
             this.InitializeComponent();
+            ApplicationView.GetForCurrentView().TryResizeView(new Size(550, 325));
             if (ApplicationData.Current.LocalSettings.Values["UseDefaultADB"] as string == "false")
             {
                 checkBox_useDefaultADB.IsChecked = false;
@@ -267,6 +269,16 @@ namespace AutoInstallAPK
                 // Application now has read/write access to the picked file
                 autoSuggestBox_PATH.Text = file.Path;
             }
+        }
+
+        private async void buttonRefresh_Click(object sender, RoutedEventArgs e)
+        {
+            await loadDeviceInfo();
+        }
+
+        private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            ApplicationView.GetForCurrentView().TryResizeView(new Size(550, 325));
         }
 
         //private async void MainPage_AppServiceConnected(object sender, AppServiceTriggerDetails e)

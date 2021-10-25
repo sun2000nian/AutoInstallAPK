@@ -22,6 +22,7 @@ using System.Net.Mime;
 using HeyRed.Mime;
 using System.Collections.ObjectModel;
 using Windows.UI;
+using Windows.UI.ViewManagement;
 
 // https://go.microsoft.com/fwlink/?LinkId=234238 上介绍了“空白页”项模板
 
@@ -40,7 +41,6 @@ namespace AutoInstallAPK
         //DispatcherTimer timer = null;
         //StorageFolder storageFolder = null;
         //StorageFile commandFile = null;
-        int term = 0;
         private async Task<ApkInfo> getApkInfo(StorageFile file)
         {
             byte[] manifestData = null;
@@ -174,6 +174,26 @@ namespace AutoInstallAPK
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
+            foreach (var i in path)
+            {
+                if (i == ' ')
+                {
+                    textBlockPackageName.Text = "文件名及其文件夹中不能带有空格！";
+                    buttonInstall.Visibility = Visibility.Collapsed;
+                    buttonCancel.Visibility = Visibility.Collapsed;
+                    textBlock_package.Text = "";
+                    textBlock_version.Text = "";
+                    textBlock_out.Text = "";
+                    autoSuggestBox.IsEnabled = false;
+                    comboBox_SelectDevice.IsEnabled = false;
+                    button_Connect.IsEnabled = false;
+                    buttonRefresh.IsEnabled = false;
+                    await loadDeviceInfo();
+                    buttonFinish.Visibility = Visibility.Visible;
+                    buttonFinish.Content = "取消";
+                    return;
+                }
+            }
             var file = e.Parameter as StorageFile;
             try
             {
@@ -223,7 +243,9 @@ namespace AutoInstallAPK
         public InstallPage()
         {
             this.InitializeComponent();
+            ApplicationView.GetForCurrentView().TryResizeView(new Size(500, 300));
             path = ApplicationData.Current.LocalSettings.Values["openningPath"] as string;
+            
             textBlockPath.Text = "路径: "+ path;
             //timer = new DispatcherTimer();
             //timer.Tick += dispatcherTimer_Tick;
@@ -234,7 +256,7 @@ namespace AutoInstallAPK
             textBlock_version.Text = "";
             textBlock_out.Text = "";
             buttonInstall.IsEnabled = false;
-            term = 1;
+            buttonFinish.Visibility = Visibility.Collapsed;
         }
 
         //void dispatcherTimer_Tick(object sender, object e)
@@ -268,14 +290,15 @@ namespace AutoInstallAPK
             {
                 buttonInstall.Content = "安装中";
                 buttonInstall.IsEnabled = false;
-                string result = await RunCommand.AdbRun("-s " + selectedStr + " install " + path);
+                string cmd = "-s " + selectedStr + " install " + path;
+                string result = await RunCommand.AdbInstall(cmd);
                 //string result = await RunCommand.Run("C:\\Users\\sun20\\Desktop\\test\\default_test.exe", "install " + selectedStr);
-                buttonCancel.Content = "完成";
-                buttonInstall.IsEnabled = true;
+                
                 buttonInstall.Visibility = Visibility.Collapsed;
                 textBlock_out.Text = result;
                 textBlock_out.Foreground = textBlock.Foreground;
-
+                buttonCancel.Visibility = Visibility.Collapsed;
+                buttonFinish.Visibility = Visibility.Visible;
             }
         }
 
@@ -337,6 +360,11 @@ namespace AutoInstallAPK
             textBlock_out.Foreground = textBlock.Foreground;
             button_Connect.IsEnabled = true;
             await loadDeviceInfo();
+        }
+
+        private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            ApplicationView.GetForCurrentView().TryResizeView(new Size(500, 300));
         }
     }
 }

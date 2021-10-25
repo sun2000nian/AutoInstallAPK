@@ -48,13 +48,55 @@ namespace AutoInstallAPK
 
         public static async Task<string> AdbRun(string para)
         {
-            if(ApplicationData.Current.LocalSettings.Values["UseDefaultADB"]as string == "false")
+            if(ApplicationData.Current.LocalSettings.Values["UseDefaultADB"] as string == "false")
             {
                 return await Run(ApplicationData.Current.LocalSettings.Values["adbPath"] as string, para);
             }
             else
             {
                 return await Run(Directory.GetCurrentDirectory() + "/platform-tools/adb.exe", para);
+            }
+        }
+
+        public static async Task<string> AdbInstall(string para)
+        {
+            if (ApplicationData.Current.LocalSettings.Values["UseDefaultADB"] as string == "false")
+            {
+                return await Install(ApplicationData.Current.LocalSettings.Values["adbPath"] as string, para);
+            }
+            else
+            {
+                return await Install(Directory.GetCurrentDirectory() + "/platform-tools/adb.exe", para);
+            }
+        }
+
+        public static async Task<string> Install(string cmd, string apkPath)
+        {
+            ApplicationData.Current.LocalSettings.Values["finished"] = "false";
+            ApplicationData.Current.LocalSettings.Values["command"] = cmd;
+            ApplicationData.Current.LocalSettings.Values["parameters"] = apkPath;
+            await FullTrustProcessLauncher.LaunchFullTrustProcessForCurrentAppAsync("InstallApk");
+            await WaitFinish();
+            commandFile = (await ApplicationData.Current.LocalCacheFolder.TryGetItemAsync("commandOutput")) as StorageFile;
+            if (commandFile == null)
+            {
+                await ApplicationData.Current.LocalCacheFolder.CreateFileAsync("commandOutput");
+                return null;
+            }
+            else
+            {
+                var stream = await commandFile.OpenAsync(Windows.Storage.FileAccessMode.Read);
+                ulong size = stream.Size;
+                using (var inputStream = stream.GetInputStreamAt(0))
+                {
+                    using (var dataReader = new Windows.Storage.Streams.DataReader(inputStream))
+                    {
+                        uint numBytesLoaded = await dataReader.LoadAsync((uint)size);
+                        string result = dataReader.ReadString(numBytesLoaded);
+                        return result;
+                    }
+                }
+                //string result = await FileIO.ReadTextAsync(commandFile);
             }
         }
 

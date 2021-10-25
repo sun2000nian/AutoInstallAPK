@@ -116,6 +116,10 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ApkInfo.cs" />
+    <Compile Include="APKManifest.cs" />
+    <Compile Include="ApkReader.cs" />
+    <Compile Include="ApkResourceFinder.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
@@ -1015,9 +1019,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Iteedee.ApkReader">
-      <Version>1.0.1</Version>
-    </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.2.12</Version>
     </PackageReference>

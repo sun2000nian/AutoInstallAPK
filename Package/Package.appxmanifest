@@ -9,13 +9,13 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="5482fa60-b127-47e7-a4ef-c593f4292d46"
-    Publisher="CN=sun20"
-    Version="1.0.0.0" />
+    Name="34380E19625A6.ApkInstaller"
+    Publisher="CN=5C95DE2B-901F-496E-8D3D-6B534401631A"
+    Version="1.0.5.0" />
 
   <Properties>
-    <DisplayName>Package</DisplayName>
-    <PublisherDisplayName>sun20</PublisherDisplayName>
+    <DisplayName>ApkInstaller</DisplayName>
+    <PublisherDisplayName>孙昊哲</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
   </Properties>
 
@@ -33,7 +33,7 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="Package"
+        DisplayName="ApkInstaller"
         Description="Package"
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
@@ -45,6 +45,7 @@
         <desktop:Extension Category="windows.fullTrustProcess" Executable="CommandBridge\CommandBridge.exe">
           <desktop:FullTrustProcess>
             <desktop:ParameterGroup GroupId="RunCommand" Parameters="/parameters" />
+            <desktop:ParameterGroup GroupId="InstallApk" Parameters="/install" />
           </desktop:FullTrustProcess>
         </desktop:Extension>
         <uap:Extension Category="windows.fileTypeAssociation">

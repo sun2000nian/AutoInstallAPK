@@ -4,47 +4,66 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:AutoInstallAPK"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Height="325" Width="550">
-
-    <Grid Margin="10,10,10,10">
-        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="10,10,0,0" Text="设置" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="24"/>
-        <CheckBox x:Name="checkBox_useDefaultADB" Content="使用内置ADB" Checked="checkBox_useDefaultADB_Checked" Unchecked="checkBox_useDefaultADB_Unchecked" Margin="10,47,0,0" VerticalAlignment="Top"/>
-        <Grid Margin="10,84,10,181">
-            <TextBlock x:Name="textBlock1" HorizontalAlignment="Left" Text="指定ADB路径" TextWrapping="Wrap" VerticalAlignment="Center"/>
-            <AutoSuggestBox 
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    d:Height="325" d:Width="550"
+    MinHeight="325"
+    MinWidth="550">
+    <Grid Margin="0,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <Grid Margin="10,10,10,10" >
+            <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="10,10,0,0" Text="设置" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="24"/>
+            <CheckBox x:Name="checkBox_useDefaultADB" Content="使用内置ADB" Checked="checkBox_useDefaultADB_Checked" Unchecked="checkBox_useDefaultADB_Unchecked" Margin="10,52,0,0" VerticalAlignment="Top"/>
+            <Grid Margin="10,89,10,176">
+                <TextBlock x:Name="textBlock1" HorizontalAlignment="Left" Text="指定ADB路径" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                <AutoSuggestBox 
                 x:Name="autoSuggestBox_PATH" 
-                HorizontalAlignment="Left"
-                Margin="88,0,0,0" 
+                HorizontalAlignment="Center" 
                 VerticalAlignment="Center"
                 PlaceholderText="路径"
                 QueryIcon="Copy"
                 QuerySubmitted="autoSuggestBox_PATH_QuerySubmitted"
-                Width="342"/>
-            <Button x:Name="buttonApplyADBPath" Content="应用" Margin="435,0,0,0" Width="65" Click="buttonApplyADBPath_Click"/>
+                Width="336"/>
+                <Button x:Name="buttonApplyADBPath" Margin="429,0,0,0" Click="buttonApplyADBPath_Click">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Stretch" Orientation="Horizontal">
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE10B;" FontSize="15px"/>
+                        <TextBlock Text=" 应用"/>
+                    </StackPanel>
+                </Button>
 
-        </Grid>
-        <Grid Margin="10,174,10,91">
-            <TextBlock x:Name="textBlock2" HorizontalAlignment="Left" Text="连接设备" TextWrapping="Wrap" VerticalAlignment="Center"/>
-            <AutoSuggestBox 
+            </Grid>
+            <Grid Margin="10,179,10,86">
+                <TextBlock x:Name="textBlock2" HorizontalAlignment="Left" Text="连接设备" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                <AutoSuggestBox 
                 x:Name="autoSuggestBox_IP" 
-                HorizontalAlignment="Left" 
-                Margin="88,0,0,0" 
+                HorizontalAlignment="Center" 
                 VerticalAlignment="Center" 
                 PlaceholderText="ip地址"
-                Width="342"/>
-            <Button x:Name="button_connect" Content="连接" Margin="435,0,0,0" Width="65" Click="button_Connect_Click"/>
+                Width="336"/>
+                <Button x:Name="button_connect" Margin="429,0,0,0" Click="button_Connect_Click">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Stretch" Orientation="Horizontal">
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE109;" FontSize="15px"/>
+                        <TextBlock Text=" 连接"/>
+                    </StackPanel>
+                </Button>
+
+            </Grid>
+            <TextBlock x:Name="textBlock_message" Margin="10,224,10,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top"/>
+            <TextBlock x:Name="textBlock3" HorizontalAlignment="Left" Margin="341,276,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="179"><Run Text="安装"/><Run Text="应用"/><Run Text="请直接双击apk文件"/></TextBlock>
+            <Grid Margin="10,134,10,131">
+                <TextBlock x:Name="textBlock4" HorizontalAlignment="Left" Text="已连接设备" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                <ComboBox x:Name="comboBox_devices" ItemsSource="{x:Bind devices}" DisplayMemberPath="Source" Width="336" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                <Button x:Name="buttonRefresh" Margin="429,0,0,0" Click="buttonRefresh_Click">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Stretch" Orientation="Horizontal">
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE117;" FontSize="15px"/>
+                        <TextBlock Text=" 刷新"/>
+                    </StackPanel>
+                </Button>
+
+            </Grid>
+
 
         </Grid>
-        <TextBlock x:Name="textBlock_message" HorizontalAlignment="Left" Margin="10,219,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="507"/>
-        <TextBlock x:Name="textBlock3" HorizontalAlignment="Left" Margin="341,276,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="179"><Run Text="安装"/><Run Text="应用"/><Run Text="请直接双击apk文件"/></TextBlock>
-        <Grid Margin="10,129,10,136">
-            <TextBlock x:Name="textBlock4" HorizontalAlignment="Left" Text="已连接设备" TextWrapping="Wrap" VerticalAlignment="Center"/>
-            <ComboBox x:Name="comboBox_devices" ItemsSource="{x:Bind devices}" DisplayMemberPath="Source" Width="342" VerticalAlignment="Center" Margin="88,0,0,0" />
-
-        </Grid>
-
-
     </Grid>
+    
 </Page>
